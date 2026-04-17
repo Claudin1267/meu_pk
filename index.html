@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1e4d0f">
+<title>Cocada dos Sonhos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #1e6b0f;
+    --verde-escuro: #134308;
+    --verde-claro: #f0f7eb;
+    --verde-medio: #d4edcc;
+    --ouro: #c9a227;
+    --marrom: #3b1f0a;
+    --texto: #2c1810;
+    --branco: #fff;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--branco);
+    color: var(--texto);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--verde-escuro);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Playfair Display', serif;
+    color: var(--branco); font-size: 18px; text-decoration: none;
+  }
+  .nav-logo span { font-size: 22px; }
+  .nav-links { display: flex; gap: 6px; align-items: center; }
+  .nav-links a {
+    color: rgba(255,255,255,0.85); text-decoration: none;
+    font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .nav-links a:hover { background: rgba(255,255,255,0.15); }
+  .btn-peca {
+    background: var(--verde) !important; color: #fff !important;
+    border-radius: 20px !important; padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--verde-claro);
+    padding: 40px 20px 30px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 7vw, 48px);
+    color: var(--marrom); line-height: 1.2; margin-bottom: 12px;
+  }
+  .hero-text p { color: #555; font-size: 15px; margin-bottom: 20px; }
+  .btn-wp {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--verde); color: #fff;
+    padding: 14px 24px; border-radius: 30px;
+    font-weight: 700; font-size: 15px; text-decoration: none;
+    box-shadow: 0 4px 16px rgba(30,107,15,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-wp:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30,107,15,0.45); }
+  .hero-img {
+    position: relative; border-radius: var(--radius); overflow: hidden;
+    height: 220px; background: linear-gradient(135deg,#a0732a,#c9922a);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-img img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-badge {
+    position: absolute; bottom: 16px; left: 16px;
+    background: var(--ouro); color: #fff;
+    padding: 8px 14px; border-radius: 10px;
+    font-size: 12px; font-weight: 700; line-height: 1.3;
+  }
+
+  /* ── SECTION HEADER ── */
+  .sec-label {
+    display: inline-block;
+    background: var(--verde-medio); color: var(--verde-escuro);
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .sec-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 6vw, 40px); color: var(--marrom); margin-bottom: 8px;
+  }
+  .sec-sub { color: #666; font-size: 14px; margin-bottom: 28px; }
+
+  /* ── SABORES ── */
+  .sabores-sec {
+    background: var(--verde-claro);
+    padding: 50px 20px;
+  }
+  .grid-sabores {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .card-sabor {
+    background: var(--branco);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s;
+  }
+  .card-sabor:hover { transform: translateY(-4px); }
+  .card-img {
+    width: 100%; height: 160px; object-fit: cover;
+    background: linear-gradient(135deg, #b8860b, #daa520);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .card-body { padding: 16px; }
+  .card-nome {
+    font-weight: 700; font-size: 17px; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-desc { font-size: 13px; color: #666; margin-bottom: 10px; }
+  .card-tag {
+    display: inline-block;
+    background: var(--verde-medio); color: var(--verde-escuro);
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  /* ── PREÇOS ── */
+  .precos-sec { padding: 50px 20px; background: var(--branco); text-align: center; }
+  .grid-precos {
+    display: flex; flex-wrap: wrap; gap: 18px; justify-content: center;
+    margin-top: 10px;
+  }
+  .card-preco {
+    flex: 1; min-width: 260px; max-width: 340px;
+    border: 2px solid var(--verde-medio);
+    border-radius: var(--radius); padding: 28px 24px;
+    text-align: left; position: relative;
+  }
+  .card-preco.destaque {
+    background: var(--verde); border-color: var(--verde);
+    color: #fff;
+  }
+  .preco-label {
+    display: inline-block;
+    background: var(--verde-medio); color: var(--verde-escuro);
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .card-preco.destaque .preco-label {
+    background: var(--ouro); color: #fff;
+  }
+  .preco-nome { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 6px; }
+  .preco-valor { font-size: 48px; font-weight: 700; line-height: 1; }
+  .preco-per { font-size: 13px; opacity: 0.7; margin-bottom: 18px; }
+  .preco-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .preco-list li { font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .preco-list li::before { content: "✓"; color: var(--verde); font-weight: 700; }
+  .card-preco.destaque .preco-list li::before { color: #a8f08a; }
+  .btn-economia {
+    width: 100%; padding: 12px; border: none; border-radius: 10px;
+    background: rgba(0,0,0,0.2); color: #fff;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+
+  /* ── QUOTE BANNER ── */
+  .quote-banner {
+    background: linear-gradient(rgba(20,60,5,0.7), rgba(20,60,5,0.7)),
+      url('') center/cover;
+    background-color: var(--verde-escuro);
+    padding: 48px 24px; text-align: center;
+  }
+  .quote-banner blockquote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 5vw, 28px);
+    color: #fff; font-style: italic; max-width: 500px; margin: 0 auto;
+  }
+
+  /* ── ENTREGA ── */
+  .entrega-sec { background: var(--verde-claro); padding: 50px 20px; }
+  .grid-entrega {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px; margin-top: 8px;
+  }
+  .card-entrega {
+    background: var(--branco); border-radius: var(--radius);
+    padding: 22px 18px; box-shadow: var(--shadow); text-align: center;
+  }
+  .card-entrega .icon { font-size: 32px; margin-bottom: 10px; }
+  .card-entrega h3 { color: var(--verde); font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .card-entrega p { font-size: 13px; color: #666; }
+  .card-entrega strong { color: var(--marrom); }
+
+  /* ── CTA / CONTATO ── */
+  .cta-sec {
+    background: var(--verde-escuro);
+    padding: 60px 20px; text-align: center;
+  }
+  .cta-sec .sec-label { background: rgba(255,255,255,0.15); color: #fff; }
+  .cta-sec h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 6vw, 44px); color: #fff; margin-bottom: 10px;
+  }
+  .cta-sec p { color: rgba(255,255,255,0.75); margin-bottom: 30px; font-size: 15px; }
+  .cta-btns { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 20px; }
+  .btn-wp-lg {
+    display: flex; align-items: center; gap: 8px;
+    background: #25D366; color: #fff;
+    padding: 14px 24px; border-radius: 30px;
+    font-weight: 700; font-size: 15px; text-decoration: none;
+    transition: transform 0.2s;
+  }
+  .btn-ig {
+    display: flex; align-items: center; gap: 8px;
+    background: transparent; color: #fff;
+    border: 2px solid rgba(255,255,255,0.4);
+    padding: 14px 24px; border-radius: 30px;
+    font-weight: 700; font-size: 15px; text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-ig:hover { background: rgba(255,255,255,0.1); }
+  .btn-wp-lg:hover { transform: scale(1.03); }
+  .pix-info {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.9); padding: 12px 20px;
+    border-radius: 12px; font-size: 14px; font-weight: 600;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0d2a07;
+    color: rgba(255,255,255,0.55);
+    text-align: center; padding: 20px;
+    font-size: 12px; line-height: 1.8;
+  }
+  footer a { color: rgba(255,255,255,0.45); }
+
+  /* ── CHATBOT ── */
+  #chat-fab {
+    position: fixed; bottom: 20px; right: 16px; z-index: 200;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  }
+  .chat-bubble-btn {
+    background: var(--verde); color: #fff;
+    border: none; border-radius: 30px;
+    padding: 12px 18px; font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 18px rgba(30,107,15,0.4);
+    display: flex; align-items: center; gap: 8px;
+    transition: transform 0.2s;
+  }
+  .chat-bubble-btn:hover { transform: scale(1.04); }
+
+  #chat-window {
+    display: none;
+    background: #fff;
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    width: min(340px, 94vw);
+    flex-direction: column;
+    max-height: 70vh;
+  }
+  #chat-window.open { display: flex; }
+  .chat-header {
+    background: var(--verde-escuro);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px; color: #fff;
+  }
+  .chat-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--verde); border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .chat-header h4 { font-size: 14px; margin-bottom: 1px; }
+  .chat-header small { font-size: 11px; opacity: 0.75; }
+  .chat-close {
+    margin-left: auto; background: none; border: none; color: #fff;
+    font-size: 20px; cursor: pointer; line-height: 1;
+  }
+  .chat-quick {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px;
+    background: #f9f9f9; border-bottom: 1px solid #eee;
+  }
+  .quick-btn {
+    background: #fff; border: 1.5px solid #ddd;
+    border-radius: 16px; padding: 5px 11px; font-size: 12px;
+    cursor: pointer; transition: all 0.2s; font-weight: 600;
+    white-space: nowrap;
+  }
+  .quick-btn:hover { background: var(--verde-medio); border-color: var(--verde); color: var(--verde-escuro); }
+  .chat-msgs {
+    flex: 1; overflow-y: auto; padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .msg { max-width: 85%; font-size: 14px; padding: 10px 14px; border-radius: 14px; line-height: 1.5; }
+  .msg.bot { background: #f0f7eb; color: var(--marrom); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .msg.user { background: var(--verde); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .chat-input-row {
+    display: flex; gap: 8px; padding: 10px 12px;
+    border-top: 1px solid #eee;
+  }
+  .chat-input-row input {
+    flex: 1; border: 1.5px solid #ddd; border-radius: 20px;
+    padding: 9px 14px; font-size: 14px; outline: none; font-family: inherit;
+    transition: border 0.2s;
+  }
+  .chat-input-row input:focus { border-color: var(--verde); }
+  .chat-send {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--verde); border: none; color: #fff;
+    font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .chat-send:hover { background: var(--verde-escuro); }
+
+  /* ── MOBILE ADJUSTMENTS ── */
+  @media (max-width: 480px) {
+    .nav-links a:not(.btn-peca):not(:last-child) { display: none; }
+    .hero { padding: 30px 16px 24px; }
+    .grid-precos { flex-direction: column; }
+    .card-preco { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo"><span>🥥</span> Cocada dos Sonhos</a>
+  <div class="nav-links">
+    <a href="#sabores">Sabores</a>
+    <a href="#precos">Preços</a>
+    <a href="#entrega">Entrega</a>
+    <a href="#contato" class="btn-peca">Peça já</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Doce feito com amor e coco fresco</h1>
+    <p>Cocadas artesanais preparadas com coco fresco, sem conservantes, com aquela textura que só o cuidado artesanal consegue entregar. Cada mordida é uma memória.</p>
+    <a href="https://wa.me/5522988083910?text=Olá!%20Quero%20pedir%20cocada!" class="btn-wp">
+      💬 Peça pelo WhatsApp
+    </a>
+  </div>
+  <div class="hero-img">
+    <!-- Troque pelo caminho real da sua foto: <img src="assets/caramelizada.jpg" alt="Cocada Caramelizada"> -->
+    <span style="font-size:72px">🥥</span>
+    <div class="hero-badge">✨ 100% Artesanal<br>Feito na hora</div>
+  </div>
+</section>
+
+<!-- SABORES -->
+<section class="sabores-sec" id="sabores">
+  <div class="sec-label">NOSSOS SABORES</div>
+  <h2 class="sec-title">Seis jeitos de se apaixonar</h2>
+  <p class="sec-sub">Cada sabor tem sua própria história. Todos feitos à mão, com ingredientes selecionados.</p>
+
+  <div class="grid-sabores">
+
+    <div class="card-sabor">
+      <div class="card-img">
+        <!-- <img src="assets/maracuja.jpg" alt="Maracujá"> -->
+        🌿
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🌿 Maracujá</div>
+        <p class="card-desc">Acidez tropical que equilibra o doce do coco. Refrescante, frutal e único.</p>
+        <span class="card-tag">Tropical</span>
+      </div>
+    </div>
+
+    <div class="card-sabor">
+      <div class="card-img" style="background:linear-gradient(135deg,#c8831a,#e8a030)">
+        <!-- <img src="assets/caramelizada.jpg" alt="Caramelizada"> -->
+        🍯
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🍯 Caramelizada</div>
+        <p class="card-desc">Com aquela casquinha dourada que derrete na boca. Impossível comer só uma.</p>
+        <span class="card-tag">Premium</span>
+      </div>
+    </div>
+
+    <div class="card-sabor">
+      <div class="card-img" style="background:linear-gradient(135deg,#7a9e6a,#4a7a3a)">
+        <!-- <img src="assets/gengibre.jpg" alt="Gengibre"> -->
+        🫚
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🫚 Gengibre</div>
+        <p class="card-desc">Leve toque picante e quentinho. Para quem ama o inusitado e diferente.</p>
+        <span class="card-tag">Especiaria</span>
+      </div>
+    </div>
+
+    <div class="card-sabor">
+      <div class="card-img" style="background:linear-gradient(135deg,#e8e8e0,#d0d0c0)">
+        <!-- <img src="assets/branca.jpg" alt="Branca"> -->
+        🤍
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🤍 Branca</div>
+        <p class="card-desc">A cocada clássica na sua forma mais pura. Suave, delicada e tradicional.</p>
+        <span class="card-tag">Tradicional</span>
+      </div>
+    </div>
+
+    <div class="card-sabor">
+      <div class="card-img" style="background:linear-gradient(135deg,#3d1f0a,#6b3415)">
+        <!-- <img src="assets/chocolate.jpg" alt="Chocolate"> -->
+        🍫
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🍫 Chocolate</div>
+        <p class="card-desc">Para os apaixonados pelo cacau. Intenso, rico e completamente indulgente.</p>
+        <span class="card-tag">Indulgente</span>
+      </div>
+    </div>
+
+    <div class="card-sabor">
+      <div class="card-img" style="background:linear-gradient(135deg,#c8a050,#a07828)">
+        <!-- <img src="assets/amendoim.jpg" alt="Amendoim"> -->
+        🥜
+      </div>
+      <div class="card-body">
+        <div class="card-nome">🥜 Amendoim</div>
+        <p class="card-desc">A combinação clássica do nordeste. Crocante, cremoso e irresistível.</p>
+        <span class="card-tag">Clássico</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PREÇOS -->
+<section class="precos-sec" id="precos">
+  <div class="sec-label">PREÇOS</div>
+  <h2 class="sec-title">Doce que cabe no bolso</h2>
+  <p class="sec-sub">Embalagem em acetato transparente, elegante e premium — perfeita para presente ou para se mimar.</p>
+
+  <div class="grid-precos">
+    <div class="card-preco">
+      <span class="preco-label">AVULSO</span>
+      <div class="preco-nome">Cocada Unitária</div>
+      <div class="preco-valor">R$10</div>
+      <div class="preco-per">por unidade</div>
+      <ul class="preco-list">
+        <li>1 cocada artesanal à escolha</li>
+        <li>Embalagem individual selada</li>
+        <li>Todos os sabores disponíveis</li>
+      </ul>
+    </div>
+
+    <div class="card-preco destaque">
+      <span class="preco-label">⭐ MAIS PEDIDO</span>
+      <div class="preco-nome" style="color:#fff">Caixa Premium</div>
+      <div class="preco-valor">R$35</div>
+      <div class="preco-per">caixa com 5 unidades</div>
+      <ul class="preco-list">
+        <li>5 cocadas à sua escolha</li>
+        <li>Embalagem acetato premium</li>
+        <li>Misture os sabores!</li>
+        <li>Ideal para presente</li>
+      </ul>
+      <button class="btn-economia">💰 Economize R$15 vs. avulso</button>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-banner">
+  <blockquote>"Uma cocada pede outra. Uma caixa some num piscar de olhos."</blockquote>
+</div>
+
+<!-- ENTREGA -->
+<section class="entrega-sec" id="entrega">
+  <div class="sec-label">ENTREGA</div>
+  <h2 class="sec-title">Chegamos até você</h2>
+  <p class="sec-sub">Pedido mínimo de 1 caixa. Entregamos com o mesmo cuidado com que fazemos.</p>
+
+  <div class="grid-entrega">
+    <div class="card-entrega">
+      <div class="icon">📍</div>
+      <h3>Raio de entrega</h3>
+      <p>Atendemos num raio de <strong>15 km</strong> a partir de Araruama, RJ.</p>
+    </div>
+    <div class="card-entrega">
+      <div class="icon">🚗</div>
+      <h3>Frete sob consulta</h3>
+      <p>Calculado conforme a distância. Consulte via WhatsApp antes de fechar.</p>
+    </div>
+    <div class="card-entrega">
+      <div class="icon">📦</div>
+      <h3>Pedido mínimo</h3>
+      <p>Mínimo de <strong>1 caixa</strong> (5 unidades) por pedido de entrega.</p>
+    </div>
+    <div class="card-entrega">
+      <div class="icon">⏱️</div>
+      <h3>Feito na hora</h3>
+      <p>Confirme disponibilidade e prazo diretamente pelo WhatsApp.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / CONTATO -->
+<section class="cta-sec" id="contato">
+  <div class="sec-label">FALE COM A GENTE</div>
+  <h2>Pronto para pedir?</h2>
+  <p>Manda mensagem agora — respondemos rapidinho e já separamos sua cocada fresquinha.</p>
+
+  <div class="cta-btns">
+    <a href="https://wa.me/5522988083910?text=Olá!%20Quero%20pedir%20cocada!" class="btn-wp-lg">
+      💬 WhatsApp (22) 98808-3910
+    </a>
+    <a href="https://instagram.com/cocadadosonhos" class="btn-ig">
+      📸 @cocadadosonhos
+    </a>
+  </div>
+
+  <div class="pix-info">
+    💳 Pix: <strong>22988083910</strong> · Aceitamos Pix e dinheiro
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>Cocada dos Sonhos</strong> · Araruama, RJ · Feito com 🌿 e muito amor</p>
+  <p><a href="#">Política de Privacidade</a></p>
+</footer>
+
+<!-- CHATBOT DONA SILVANA -->
+<div id="chat-fab">
+  <div id="chat-window">
+    <div class="chat-header">
+      <div class="chat-avatar">🥥</div>
+      <div>
+        <h4>Dona Silvana</h4>
+        <small>🟢 Online · Cocada dos Sonhos</small>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+
+    <div class="chat-quick">
+      <button class="quick-btn" onclick="quickMsg('Sabores')">🍬 Sabores</button>
+      <button class="quick-btn" onclick="quickMsg('Preço')">💰 Preço</button>
+      <button class="quick-btn" onclick="quickMsg('Pedir')">🛒 Pedir</button>
+      <button class="quick-btn" onclick="quickMsg('Diabetes')">❤️ Diabetes</button>
+    </div>
+
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msg bot">Olá! 🌿 Sou a <b>Dona Silvana</b> da Cocada dos Sonhos! Que bom ter você aqui. Como posso te chamar?</div>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Escreva sua dúvida..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="chat-send" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <button class="chat-bubble-btn" onclick="toggleChat()">
+    🌿 Fale com a Dona Silvana
+  </button>
+</div>
+
+<script>
+  // ── CHATBOT LÓGICO ──
+  const respostas = {
+    sabor: `Temos 6 sabores incríveis! 🥥\n• 🌿 Maracujá — tropical e refrescante\n• 🍯 Caramelizada — casquinha dourada premium\n• 🫚 Gengibre — picante e diferente\n• 🤍 Branca — clássica e delicada\n• 🍫 Chocolate — puro cacau\n• 🥜 Amendoim — crocante e cremoso\n\nQual te chamou mais atenção?`,
+    preco: `Nossos preços são:\n• Unitária: R$ 10,00 (1 cocada)\n• Caixa Premium: R$ 35,00 (5 cocadas)\n\nA caixa economiza R$15 vs comprar avulso! 💰`,
+    pedir: `Para pedir é simples! 😊\n\n1. Escolha o sabor (ou misture!)\n2. Unitária (R$10) ou Caixa com 5 (R$35)\n3. Chama no WhatsApp 👇\n\n📱 (22) 98808-3910\n\nEntregamos em até 15 km de Araruama!`,
+    diabetes: `Boa pergunta! 🍃\n\nNossas cocadas são feitas com açúcar convencional. Não recomendamos para diabéticos sem orientação médica. Se tiver restrição, consulte seu médico antes de consumir. ❤️`,
+    entrega: `Entregamos em raio de 15 km de Araruama, RJ. 🚗\n\nFrete calculado conforme a distância — chama no WhatsApp e a gente fecha o valor juntos!\n\nPedido mínimo: 1 caixa (5 unidades).`,
+    oi: `Olá! 😊 Fico feliz que veio falar comigo! Como posso te ajudar hoje?\n\nVocê pode perguntar sobre sabores, preços, entrega ou fazer seu pedido!`,
+    obrigado: `Fico feliz em ajudar! 🥥\n\nQualquer dúvida é só chamar. Que sua cocada chegue fresquinha! 😄`
+  };
+
+  function detectar(txt) {
+    txt = txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (/sabor|maracuja|chocolate|amendoim|gengibre|branca|caramel/.test(txt)) return 'sabor';
+    if (/preco|valor|quanto|custa|caixa|unidade/.test(txt)) return 'preco';
+    if (/pedir|pedido|comprar|quero|encomendar/.test(txt)) return 'pedir';
+    if (/diabet|acucar|restricao|saude/.test(txt)) return 'diabetes';
+    if (/entrega|entrego|frete|distancia|endereco|araruama/.test(txt)) return 'entrega';
+    if (/ola|oi|bom dia|boa tarde|boa noite|tudo bem/.test(txt)) return 'oi';
+    if (/obrigad|valeu|thanks/.test(txt)) return 'obrigado';
+    return null;
+  }
+
+  function addMsg(txt, who) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + who;
+    div.textContent = txt;
+    const box = document.getElementById('chat-msgs');
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  let userName = '';
+  let aguardandoNome = true;
+
+  function sendMsg() {
+    const inp = document.getElementById('chat-input');
+    const txt = inp.value.trim();
+    if (!txt) return;
+    inp.value = '';
+    addMsg(txt, 'user');
+
+    setTimeout(() => {
+      if (aguardandoNome) {
+        userName = txt.split(' ')[0];
+        aguardandoNome = false;
+        addMsg(`Prazer, ${userName}! 🌿 Sou especialista em cocadas. O que você quer saber? Use os botões acima ou escreva sua dúvida!`, 'bot');
+        return;
+      }
+      const chave = detectar(txt);
+      if (chave) {
+        addMsg(respostas[chave], 'bot');
+      } else {
+        addMsg(`Não entendi direito, ${userName}. 😅 Pode tentar os botões de atalho acima ou perguntar sobre sabores, preços ou entrega!`, 'bot');
+      }
+    }, 600);
+  }
+
+  function quickMsg(label) {
+    const inp = document.getElementById('chat-input');
+    inp.value = label;
+    sendMsg();
+  }
+
+  function toggleChat() {
+    const win = document.getElementById('chat-window');
+    win.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
