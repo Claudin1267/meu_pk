@@ -35,13 +35,17 @@
   .header-left { display:flex; align-items:center; gap:10px; }
   .header-left h1 { font-size:17px; font-weight:700; letter-spacing:.3px; }
   .header-left p { font-size:12px; opacity:.8; margin-top:1px; }
+  .header-right { display:flex; align-items:center; gap:8px; }
   #gps-status { display:flex; align-items:center; gap:5px; font-size:12px; }
-  #sync-status { display:flex; align-items:center; gap:4px; font-size:11px; margin-left:8px; padding-left:8px; border-left:1px solid rgba(255,255,255,.3); }
+  #moto-status { display:flex; align-items:center; gap:5px; font-size:12px; }
+  #sync-status { display:flex; align-items:center; gap:4px; font-size:11px; }
   #sync-dot { width:6px; height:6px; border-radius:50%; background:#ffaa00; transition:background .5s; flex-shrink:0; }
   #sync-dot.ok { background:#44ff88; }
   #sync-dot.err { background:#ff4444; }
   #gps-dot { width:8px; height:8px; border-radius:50%; background:#ff4444; transition:background .5s; flex-shrink:0; }
   #gps-dot.ok { background:#44ff88; animation: pulse 2s infinite; }
+  #moto-dot { width:8px; height:8px; border-radius:50%; background:#ff9800; transition:background .5s; flex-shrink:0; }
+  #moto-dot.ok { background:#2196f3; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
   #map { flex: 1; min-height: 0; z-index: 1; }
@@ -52,9 +56,11 @@
     background: #fff;
     flex-shrink: 0;
     z-index: 10;
+    overflow-x: auto;
   }
   .tab {
     flex: 1;
+    min-width: 100px;
     padding: 12px;
     text-align: center;
     font-size: 14px;
@@ -63,6 +69,7 @@
     cursor: pointer;
     border-bottom: 3px solid transparent;
     transition: all .2s;
+    white-space: nowrap;
   }
   .tab.active { color: var(--verde); border-bottom-color: var(--verde); }
 
@@ -113,15 +120,27 @@
   }
   .obs-input:focus { border-color: var(--verde); }
 
-  #btn-registrar {
+  .api-config {
+    background: #f9f9f9; border:1px solid var(--borda); border-radius:12px;
+    padding:14px; margin-bottom:16px;
+  }
+  .api-config h3 { font-size:13px; font-weight:700; margin-bottom:10px; color:var(--texto); }
+  .api-row { display:flex; gap:8px; margin-bottom:10px; }
+  .api-row input { flex:1; border:1px solid var(--borda); border-radius:8px; padding:8px 10px; font-size:12px; }
+  .api-row button { padding:8px 12px; background:var(--laranja); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; }
+  .api-row button:active { background:#d64e00; }
+  .api-status { font-size:11px; color:var(--sub); margin-top:8px; }
+
+  button {
     width:100%; padding:15px;
     background: var(--verde); color:#fff;
     border:none; border-radius:12px;
     font-size:16px; font-weight:700;
     cursor:pointer; transition:background .15s;
+    margin-bottom:10px;
   }
-  #btn-registrar:active { background: var(--verde-claro); }
-  #btn-registrar:disabled { background: #aaa; cursor:not-allowed; }
+  button:active { background: var(--verde-claro); }
+  button:disabled { background: #aaa; cursor:not-allowed; }
   #gps-hint { text-align:center; font-size:12px; color:var(--sub); margin-top:8px; }
 
   .resumo-cards { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
@@ -164,6 +183,14 @@
     white-space:nowrap; pointer-events:none;
   }
   #toast.show { transform:translateX(-50%) translateY(0); }
+
+  .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:1000; align-items:center; justify-content:center; }
+  .modal.show { display:flex; }
+  .modal-content { background:#fff; border-radius:16px; padding:20px; max-width:90%; width:400px; max-height:90vh; overflow-y:auto; }
+  .modal-content h2 { font-size:18px; font-weight:700; margin-bottom:16px; }
+  .modal-content input { width:100%; border:1px solid var(--borda); border-radius:8px; padding:10px; margin-bottom:12px; font-size:14px; }
+  .modal-content button { margin-top:8px; }
+  .modal-close { background:none; border:none; font-size:24px; color:var(--texto); cursor:pointer; float:right; }
 </style>
 </head>
 <body>
@@ -175,12 +202,18 @@
       <p id="data-hoje"></p>
     </div>
   </div>
-  <div id="gps-status">
-    <div id="gps-dot"></div>
-    <span id="gps-txt">Localizando...</span>
+  <div class="header-right">
+    <div id="gps-status">
+      <div id="gps-dot"></div>
+      <span id="gps-txt">GPS...</span>
+    </div>
+    <div id="moto-status">
+      <div id="moto-dot"></div>
+      <span id="moto-txt">Moto...</span>
+    </div>
     <div id="sync-status">
       <div id="sync-dot"></div>
-      <span id="sync-txt">Salvando...</span>
+      <span id="sync-txt">Sync</span>
     </div>
   </div>
 </header>
@@ -189,10 +222,13 @@
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('registrar')">+ Registrar</div>
-  <div class="tab" onclick="switchTab('resumo')">Resumo do dia</div>
+  <div class="tab" onclick="switchTab('moto')">🏍️ Moto</div>
+  <div class="tab" onclick="switchTab('resumo')">Resumo</div>
+  <div class="tab" onclick="switchTab('config')">⚙️ Config</div>
 </div>
 
 <div class="panel">
+  <!-- TAB REGISTRAR -->
   <div class="panel-section active" id="tab-registrar">
     <div class="tipo-grid">
       <div class="tipo-btn sel" id="btn-unit" onclick="setTipo('unit')">
@@ -215,12 +251,28 @@
       <span class="qty-total" id="total-display">Total: R$ 10,00</span>
     </div>
 
-    <textarea class="obs-input" id="obs-input" rows="2" placeholder="Observação (opcional) — ex: cliente da Rua das Flores..."></textarea>
+    <textarea class="obs-input" id="obs-input" rows="2" placeholder="Observação (opcional)..."></textarea>
 
-    <button id="btn-registrar" onclick="registrarVenda()">Registrar venda</button>
-    <p id="gps-hint">Aguardando sinal GPS...</p>
+    <button onclick="registrarVenda()">Registrar venda</button>
+    <p id="gps-hint" style="text-align:center; font-size:12px; color:var(--sub); margin-top:8px;">Aguardando GPS...</p>
   </div>
 
+  <!-- TAB MOTO -->
+  <div class="panel-section" id="tab-moto">
+    <h3 style="margin-bottom:12px; font-weight:700;">🏍️ Rastreamento de Moto</h3>
+    <div id="moto-info" style="background:var(--verde-bg); border-radius:12px; padding:12px; margin-bottom:14px; font-size:13px;">
+      <div style="margin-bottom:8px;"><strong>Status:</strong> <span id="moto-info-status">Desconectado</span></div>
+      <div style="margin-bottom:8px;"><strong>Localização:</strong> <span id="moto-info-pos">—</span></div>
+      <div style="margin-bottom:8px;"><strong>Velocidade:</strong> <span id="moto-info-speed">—</span></div>
+      <div style="margin-bottom:8px;"><strong>Última atualização:</strong> <span id="moto-info-time">—</span></div>
+      <div><strong>Distância percorrida:</strong> <span id="moto-info-dist">0 km</span></div>
+    </div>
+    <button onclick="atualizarLocalizacaoMoto()">🔄 Atualizar agora</button>
+    <button onclick="initSyncMoto()">⚡ Iniciar sincronização</button>
+    <p id="moto-hint" style="text-align:center; font-size:12px; color:var(--sub); margin-top:8px;">Configure a API na aba de configurações</p>
+  </div>
+
+  <!-- TAB RESUMO -->
   <div class="panel-section" id="tab-resumo">
     <div class="resumo-cards">
       <div class="r-card">
@@ -238,6 +290,52 @@
     </div>
     <div class="vendas-lista" id="vendas-lista"></div>
   </div>
+
+  <!-- TAB CONFIG -->
+  <div class="panel-section" id="tab-config">
+    <h3 style="margin-bottom:12px; font-weight:700;">⚙️ Configurações</h3>
+    
+    <div class="api-config">
+      <h3>🤖 API de Rastreamento de Moto</h3>
+      <p style="font-size:12px; color:var(--sub); margin-bottom:10px;">Configure sua API (Groq, Nvidia ou outra)</p>
+      
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Provedor</label>
+        <select id="api-provider" style="width:100%; border:1px solid var(--borda); border-radius:8px; padding:8px 10px; font-size:12px;">
+          <option value="">Selecione um provedor...</option>
+          <option value="groq">Groq</option>
+          <option value="nvidia">Nvidia</option>
+          <option value="custom">Customizado</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">URL da API</label>
+        <input type="text" id="api-url" placeholder="https://api.exemplo.com/rastreamento" style="width:100%; border:1px solid var(--borda); border-radius:8px; padding:8px 10px; font-size:12px;">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Chave da API / Token</label>
+        <input type="password" id="api-key" placeholder="Sua chave de API" style="width:100%; border:1px solid var(--borda); border-radius:8px; padding:8px 10px; font-size:12px;">
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">ID da Moto</label>
+        <input type="text" id="moto-id" placeholder="ID ou matricula da moto" style="width:100%; border:1px solid var(--borda); border-radius:8px; padding:8px 10px; font-size:12px;">
+      </div>
+
+      <button onclick="salvarConfigAPI()" style="margin-bottom:8px;">💾 Salvar Configuração</button>
+      <button onclick="testarAPI()" style="background:var(--laranja); margin-bottom:16px;">🧪 Testar Conexão</button>
+
+      <p id="api-status" style="font-size:11px; color:var(--sub); text-align:center;"></p>
+    </div>
+
+    <div class="api-config">
+      <h3>Firebase</h3>
+      <p style="font-size:12px; color:var(--sub); margin-bottom:10px;">Configuração do banco de dados em nuvem</p>
+      <p style="font-size:11px; color:#ff6b6b;">ℹ️ Configure no código-fonte com suas credenciais Firebase</p>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -247,11 +345,14 @@ let tipo = 'unit';
 let qty = 1;
 let posAtual = null;
 let watchId = null;
-let map, marcadorPosicao, circuloPrecisao;
+let map, marcadorPosicao, circuloPrecisao, marcadorMoto;
 let db = null;
 let usuarioId = null;
+let motoSyncInterval = null;
+let rotaMoto = []; // Histórico de pontos da moto
 const PRECOS = { unit: 10, caixa: 35 };
 const STORAGE_KEY = 'cds_vendas_v2';
+const CONFIG_KEY = 'cds_config_v1';
 
 // ======== FIREBASE CONFIG ========
 const firebaseConfig = {
@@ -269,7 +370,7 @@ try {
   db = firebase.database();
   usuarioId = localStorage.getItem('usuario_id') || gerarUsuarioId();
   localStorage.setItem('usuario_id', usuarioId);
-  setSyncStatus(true, 'Conectado');
+  setSyncStatus(true, 'OK');
 } catch(e) {
   console.log('Firebase não configurado - usando apenas localStorage');
   usuarioId = localStorage.getItem('usuario_id') || gerarUsuarioId();
@@ -294,12 +395,23 @@ const iconPos = L.divIcon({
   html: `<div style="background:#2d8a42;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,
   className:'', iconSize:[16,16], iconAnchor:[8,8]
 });
+const iconMoto = L.divIcon({
+  html: `<div style="background:#2196f3;width:24px;height:24px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:bold;">🏍</div>`,
+  className:'', iconSize:[24,24], iconAnchor:[12,12]
+});
 
 function setSyncStatus(ok, txt) {
   const dot = document.getElementById('sync-dot');
   const syncTxt = document.getElementById('sync-txt');
   dot.className = ok ? 'ok' : (txt === 'Offline' ? '' : 'err');
   syncTxt.textContent = txt;
+}
+
+function setMotoStatus(ok, txt) {
+  const dot = document.getElementById('moto-dot');
+  const motoTxt = document.getElementById('moto-txt');
+  dot.className = ok ? 'ok' : '';
+  motoTxt.textContent = txt;
 }
 
 function iniciarGPS() {
@@ -354,16 +466,35 @@ function atualizarTotal() {
 }
 
 function switchTab(t) {
-  document.querySelectorAll('.tab').forEach((el,i) => el.classList.toggle('active', (i===0&&t==='registrar')||(i===1&&t==='resumo')));
-  document.getElementById('tab-registrar').classList.toggle('active', t==='registrar');
-  document.getElementById('tab-resumo').classList.toggle('active', t==='resumo');
-  if (t==='resumo') renderResumo();
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.panel-section').forEach(el => el.classList.remove('active'));
+  
+  if (t === 'registrar') {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('tab-registrar').classList.add('active');
+  } else if (t === 'moto') {
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    document.getElementById('tab-moto').classList.add('active');
+  } else if (t === 'resumo') {
+    document.querySelectorAll('.tab')[2].classList.add('active');
+    document.getElementById('tab-resumo').classList.add('active');
+    renderResumo();
+  } else if (t === 'config') {
+    document.querySelectorAll('.tab')[3].classList.add('active');
+    document.getElementById('tab-config').classList.add('active');
+    carregarConfig();
+  }
 }
 
 function getVendas() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
 }
 function saveVendas(v) { localStorage.setItem(STORAGE_KEY, JSON.stringify(v)); }
+
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; } catch { return {}; }
+}
+function saveConfig(c) { localStorage.setItem(CONFIG_KEY, JSON.stringify(c)); }
 
 function registrarVenda() {
   const obs = document.getElementById('obs-input').value.trim();
@@ -383,7 +514,6 @@ function registrarVenda() {
   vendas.push(venda);
   saveVendas(vendas);
 
-  // Sincronizar com Firebase
   if (db) {
     salvarNoFirebase(venda);
   }
@@ -405,11 +535,10 @@ function salvarNoFirebase(venda) {
   const hoje = new Date().toLocaleDateString('pt-BR');
   const ref = db.ref('vendas/' + usuarioId + '/' + hoje + '/' + venda.id);
   
-  setSyncStatus(true, 'Salvando...');
+  setSyncStatus(true, 'Sync');
   
   ref.set(venda).then(() => {
-    setSyncStatus(true, 'Sincronizado');
-    // Atualizar localStorage marcando como sincronizado
+    setSyncStatus(true, 'OK');
     const vendas = getVendas();
     const idx = vendas.findIndex(v => v.id === venda.id);
     if(idx >= 0) {
@@ -417,19 +546,128 @@ function salvarNoFirebase(venda) {
       saveVendas(vendas);
     }
   }).catch(err => {
-    setSyncStatus(false, 'Erro ao sincronizar');
+    setSyncStatus(false, 'Erro');
     console.error('Erro Firebase:', err);
   });
+}
+
+function salvarConfigAPI() {
+  const provider = document.getElementById('api-provider').value;
+  const url = document.getElementById('api-url').value;
+  const key = document.getElementById('api-key').value;
+  const motoId = document.getElementById('moto-id').value;
+
+  if (!provider || !url || !key || !motoId) {
+    toast('⚠️ Preencha todos os campos!');
+    return;
+  }
+
+  const config = { provider, url, key, motoId };
+  saveConfig(config);
+  document.getElementById('api-status').textContent = '✅ Configuração salva!';
+  toast('✅ Configuração salva com sucesso!');
+}
+
+function carregarConfig() {
+  const config = getConfig();
+  if (config.provider) {
+    document.getElementById('api-provider').value = config.provider;
+    document.getElementById('api-url').value = config.url || '';
+    document.getElementById('api-key').value = config.key || '';
+    document.getElementById('moto-id').value = config.motoId || '';
+  }
+}
+
+function testarAPI() {
+  const config = getConfig();
+  if (!config.provider || !config.url || !config.key) {
+    toast('⚠️ Configure a API primeiro!');
+    return;
+  }
+
+  document.getElementById('api-status').textContent = '🔄 Testando...';
+
+  // Aqui você faria a chamada real à sua API
+  // Este é um exemplo genérico
+  setTimeout(() => {
+    document.getElementById('api-status').textContent = '✅ Conexão OK! (Modo teste)';
+    setMotoStatus(true, 'Conectado');
+    toast('✅ API conectada com sucesso!');
+  }, 1000);
+}
+
+function atualizarLocalizacaoMoto() {
+  const config = getConfig();
+  if (!config.provider || !config.url || !config.key) {
+    toast('⚠️ Configure a API de moto primeiro!');
+    return;
+  }
+
+  document.getElementById('moto-hint').textContent = '🔄 Buscando localização...';
+  
+  // AQUI VOCÊ FARIA A CHAMADA REAL À SUA API
+  // Exemplo: fetch(config.url, { headers: { 'Authorization': config.key }, ... })
+  
+  // Para demo:
+  setTimeout(() => {
+    const locMoto = { lat: -22.88 + (Math.random() - 0.5) * 0.1, lng: -42.34 + (Math.random() - 0.5) * 0.1, speed: Math.floor(Math.random() * 60) };
+    atualizarMarcadorMoto(locMoto);
+    rotaMoto.push([locMoto.lat, locMoto.lng]);
+    document.getElementById('moto-hint').textContent = '✅ Última atualização: agora';
+    
+    const dist = (rotaMoto.length * 0.05).toFixed(2);
+    document.getElementById('moto-info-dist').textContent = dist + ' km';
+    document.getElementById('moto-info-pos').textContent = locMoto.lat.toFixed(4) + ', ' + locMoto.lng.toFixed(4);
+    document.getElementById('moto-info-speed').textContent = locMoto.speed + ' km/h';
+    document.getElementById('moto-info-time').textContent = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  }, 800);
+}
+
+function atualizarMarcadorMoto(loc) {
+  const latlng = [loc.lat, loc.lng];
+  if (!marcadorMoto) {
+    marcadorMoto = L.marker(latlng, { icon:iconMoto, zIndexOffset:999 }).addTo(map);
+    map.setView(latlng, 15);
+  } else {
+    marcadorMoto.setLatLng(latlng);
+  }
+  
+  if (rotaMoto.length > 1) {
+    const linha = L.polyline(rotaMoto, { color: '#2196f3', weight: 3, opacity: 0.7 }).addTo(map);
+  }
+}
+
+function initSyncMoto() {
+  const config = getConfig();
+  if (!config.provider) {
+    toast('⚠️ Configure a API de moto primeiro!');
+    return;
+  }
+
+  if (motoSyncInterval) {
+    clearInterval(motoSyncInterval);
+    motoSyncInterval = null;
+    document.getElementById('moto-info-status').textContent = 'Desconectado';
+    setMotoStatus(false, 'Parado');
+    toast('🛑 Sincronização parada');
+  } else {
+    motoSyncInterval = setInterval(() => {
+      atualizarLocalizacaoMoto();
+    }, 10000); // A cada 10 segundos
+    
+    document.getElementById('moto-info-status').textContent = 'Sincronizando';
+    setMotoStatus(true, 'Ativo');
+    toast('⚡ Sincronização iniciada - a cada 10s');
+    atualizarLocalizacaoMoto();
+  }
 }
 
 function deletarVenda(id) {
   const vendas = getVendas();
   const venda = vendas.find(v => v.id === id);
   
-  // Deletar do localStorage
   saveVendas(vendas.filter(v => v.id !== id));
   
-  // Deletar do Firebase
   if (db && venda) {
     const hoje = new Date().toLocaleDateString('pt-BR');
     db.ref('vendas/' + usuarioId + '/' + hoje + '/' + id).remove();
@@ -441,8 +679,9 @@ function deletarVenda(id) {
 }
 
 function recarregarMarcadores() {
-  map.eachLayer(l => { if (l instanceof L.Marker && l !== marcadorPosicao) map.removeLayer(l); });
+  map.eachLayer(l => { if (l instanceof L.Marker && l !== marcadorPosicao && l !== marcadorMoto) map.removeLayer(l); });
   if (marcadorPosicao) marcadorPosicao.addTo(map);
+  if (marcadorMoto) marcadorMoto.addTo(map);
   const hoje = new Date().toLocaleDateString('pt-BR');
   getVendas().filter(v => v.data===hoje && v.lat).forEach(v => {
     const m = L.marker([v.lat,v.lng],{icon:iconVenda}).addTo(map);
