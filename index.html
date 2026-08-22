@@ -6,6 +6,8 @@
 <title>Cocada dos Sonhos — Rastreador</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root {
@@ -34,6 +36,10 @@
   .header-left h1 { font-size:17px; font-weight:700; letter-spacing:.3px; }
   .header-left p { font-size:12px; opacity:.8; margin-top:1px; }
   #gps-status { display:flex; align-items:center; gap:5px; font-size:12px; }
+  #sync-status { display:flex; align-items:center; gap:4px; font-size:11px; margin-left:8px; padding-left:8px; border-left:1px solid rgba(255,255,255,.3); }
+  #sync-dot { width:6px; height:6px; border-radius:50%; background:#ffaa00; transition:background .5s; flex-shrink:0; }
+  #sync-dot.ok { background:#44ff88; }
+  #sync-dot.err { background:#ff4444; }
   #gps-dot { width:8px; height:8px; border-radius:50%; background:#ff4444; transition:background .5s; flex-shrink:0; }
   #gps-dot.ok { background:#44ff88; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -127,7 +133,21 @@
   .venda-item {
     display:flex; align-items:center; gap:10px;
     background:var(--cinza); border-radius:10px; padding:10px 12px;
+    position:relative;
   }
+  .venda-item.syncing::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #ffaa00;
+    border-radius: 50%;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%, 49%, 100% { opacity: 0; } 50%, 99% { opacity: 1; } }
   .venda-icon { font-size:20px; }
   .venda-info { flex:1; }
   .venda-info .vi-top { font-size:13px; font-weight:600; }
@@ -158,6 +178,10 @@
   <div id="gps-status">
     <div id="gps-dot"></div>
     <span id="gps-txt">Localizando...</span>
+    <div id="sync-status">
+      <div id="sync-dot"></div>
+      <span id="sync-txt">Salvando...</span>
+    </div>
   </div>
 </header>
 
@@ -224,9 +248,40 @@ let qty = 1;
 let posAtual = null;
 let watchId = null;
 let map, marcadorPosicao, circuloPrecisao;
+let db = null;
+let usuarioId = null;
 const PRECOS = { unit: 10, caixa: 35 };
 const STORAGE_KEY = 'cds_vendas_v2';
 
+// ======== FIREBASE CONFIG ========
+const firebaseConfig = {
+  apiKey: "AIzaSyC_EXEMPLO_CHAVE_AQUI",
+  authDomain: "cocada-dos-sonhos.firebaseapp.com",
+  projectId: "cocada-dos-sonhos",
+  storageBucket: "cocada-dos-sonhos.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcd1234efgh5678"
+};
+
+// Inicializar Firebase
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  usuarioId = localStorage.getItem('usuario_id') || gerarUsuarioId();
+  localStorage.setItem('usuario_id', usuarioId);
+  setSyncStatus(true, 'Conectado');
+} catch(e) {
+  console.log('Firebase não configurado - usando apenas localStorage');
+  usuarioId = localStorage.getItem('usuario_id') || gerarUsuarioId();
+  localStorage.setItem('usuario_id', usuarioId);
+  setSyncStatus(false, 'Offline');
+}
+
+function gerarUsuarioId() {
+  return 'usuario_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Mapa
 map = L.map('map', { zoomControl:true, attributionControl:false });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(map);
 map.setView([-22.88, -42.34], 14);
@@ -239,6 +294,13 @@ const iconPos = L.divIcon({
   html: `<div style="background:#2d8a42;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,
   className:'', iconSize:[16,16], iconAnchor:[8,8]
 });
+
+function setSyncStatus(ok, txt) {
+  const dot = document.getElementById('sync-dot');
+  const syncTxt = document.getElementById('sync-txt');
+  dot.className = ok ? 'ok' : (txt === 'Offline' ? '' : 'err');
+  syncTxt.textContent = txt;
+}
 
 function iniciarGPS() {
   if (!navigator.geolocation) { setGPS(false, 'GPS indisponível'); return; }
@@ -308,15 +370,23 @@ function registrarVenda() {
   const total = PRECOS[tipo] * qty;
   const agora = new Date();
   const venda = {
-    id: Date.now(), tipo, qty, total, obs,
+    id: Date.now(),
+    tipo, qty, total, obs,
     hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}),
     data: agora.toLocaleDateString('pt-BR'),
     lat: posAtual?.lat || null,
     lng: posAtual?.lng || null,
+    synced: false
   };
+  
   const vendas = getVendas();
   vendas.push(venda);
   saveVendas(vendas);
+
+  // Sincronizar com Firebase
+  if (db) {
+    salvarNoFirebase(venda);
+  }
 
   if (venda.lat) {
     const marker = L.marker([venda.lat, venda.lng], { icon:iconVenda }).addTo(map);
@@ -331,8 +401,40 @@ function registrarVenda() {
   renderResumo();
 }
 
+function salvarNoFirebase(venda) {
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const ref = db.ref('vendas/' + usuarioId + '/' + hoje + '/' + venda.id);
+  
+  setSyncStatus(true, 'Salvando...');
+  
+  ref.set(venda).then(() => {
+    setSyncStatus(true, 'Sincronizado');
+    // Atualizar localStorage marcando como sincronizado
+    const vendas = getVendas();
+    const idx = vendas.findIndex(v => v.id === venda.id);
+    if(idx >= 0) {
+      vendas[idx].synced = true;
+      saveVendas(vendas);
+    }
+  }).catch(err => {
+    setSyncStatus(false, 'Erro ao sincronizar');
+    console.error('Erro Firebase:', err);
+  });
+}
+
 function deletarVenda(id) {
-  saveVendas(getVendas().filter(v => v.id !== id));
+  const vendas = getVendas();
+  const venda = vendas.find(v => v.id === id);
+  
+  // Deletar do localStorage
+  saveVendas(vendas.filter(v => v.id !== id));
+  
+  // Deletar do Firebase
+  if (db && venda) {
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    db.ref('vendas/' + usuarioId + '/' + hoje + '/' + id).remove();
+  }
+  
   renderResumo();
   recarregarMarcadores();
   toast('🗑️ Venda removida');
@@ -363,7 +465,7 @@ function renderResumo() {
     return;
   }
   lista.innerHTML = [...vendas].reverse().map(v => `
-    <div class="venda-item">
+    <div class="venda-item ${!v.synced ? 'syncing' : ''}">
       <div class="venda-icon">${v.tipo==='unit'?'🥥':'📦'}</div>
       <div class="venda-info">
         <div class="vi-top">${v.qty}x ${v.tipo==='unit'?'Unidade':'Caixinha'} · ${v.hora}</div>
